@@ -13,7 +13,6 @@ function Home ({ navigation }){
     };
     return(
         <View style={styles.container}>
-            <Text style={styles.text}>HOLA MUNDO</Text>
             <TouchableOpacity onPress={()=>openCamera()} >
                 <Text style={styles.text}>Abrir Camera</Text>
             </TouchableOpacity>
