@@ -10,6 +10,8 @@ import React, { useState } from 'react';
 
 import {
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
   View,
   Text,
   StatusBar,
@@ -31,7 +33,8 @@ function Login ({ navigation }){
   const onChangePassword = (text) => {
     setPassword(text);
   };
-  //Ip oficina 192.168.0.19, Ip Franco 192.168.0.5, Ip Casa 192.168.0.5
+
+  //Ip oficina 192.168.0.19, Ip Casa 192.168.0.5
   const signIn = async () => {
     let response = await fetch('http://192.168.0.19:80/api/authenticate', 
     { 
@@ -55,21 +58,21 @@ function Login ({ navigation }){
   return (
     <View style={styles.container}>
       <Image style={styles.logo} source={require('../assets/images/scopesilogo.png')} />
-      <TextInput style={styles.input}
-        onChangeText={text => onChangeText(text)}
-        value={username}
-        autoCapitalize='none'
-        placeholder='Usuario'
-      />
-      <TextInput 
-        style={styles.input} 
-        onChangeText={text => onChangePassword(text)} 
-        value={password} 
-        secureTextEntry={true}
-        autoCapitalize='none'
-        placeholder='Contraseña'
-      />
-      <View style={styles.buttonContainer}>
+        <TextInput style={styles.input}
+          onChangeText={text => onChangeText(text)}
+          value={username}
+          autoCapitalize='none'
+          placeholder='Usuario'
+        />
+        <TextInput 
+          style={styles.input} 
+          onChangeText={text => onChangePassword(text)} 
+          value={password} 
+          secureTextEntry={true}
+          autoCapitalize='none'
+          placeholder='Contraseña'
+        />
+    <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.button}
           onPress={()=>signIn()}

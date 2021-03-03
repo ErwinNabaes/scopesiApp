@@ -2,7 +2,7 @@ import React, { Component, useEffect, useState } from 'react';
 import Camera, { RNCamera } from 'react-native-camera';
 import { useCamera } from 'react-native-camera-hooks';
 import Icon from 'react-native-vector-icons/dist/Ionicons';
-
+import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons';
 import {
   View,
   StyleSheet,
@@ -14,13 +14,18 @@ import {
 function OpenCamera({props , navigation}) {    
   const [
     { cameraRef, type },
-    { takePicture , recordVideo, isRecording },
+    { takePicture , recordVideo },
   ] = useCamera(props);
   const [mode , setMode] = useState('camera');
+  const [isRecording , setIsRecording] = useState(false);
+  const [flashState , setFlashState] = useState(false);
+  const [duration , setDuration] = useState(null);
+  const [dateNow , setDateNow] = useState(null);
+  const [totalSeconds , setTotalSeconds] = useState(0);
 
   const takePhoto = async () => {
     const data = await takePicture();
-
+    console.log(data);
     let photo = {
       uri: data.uri,
       type: 'image/jpeg',
@@ -32,22 +37,16 @@ function OpenCamera({props , navigation}) {
     formData.append('idEmpresa', 25);
     formData.append('idUbicacion', 43673);
 
-    let response = await fetch('http://192.168.0.19:80/api/fotos_map/uploadFile', 
-    { 
-      method: 'POST' , 
-      headers: {'Accept': '*/*','Content-Type': 'multipart/form-data'},
-      body: formData
-    })
-    .catch(function (error) {
-      console.log('setNotifications error: ', error);
-    })
-    .then((response) => response.json());
-    console.log(response);
-    createAlert(response.fileDownloadUri);
+    if(data.uri){
+      confirmUpload(formData);
+    }
   }
 
   const record = async () => {
+    setDateNow(new Date());
+    setIsRecording(true);
     const data = await recordVideo({maxDuration:60});
+    setIsRecording(false);
     console.log(data);
 
     let video = {
@@ -61,18 +60,9 @@ function OpenCamera({props , navigation}) {
     formData.append('idEmpresa', 25);
     formData.append('idUbicacion', 43673);
 
-    let response = await fetch('http://192.168.0.19:80/api/fotos_map/uploadFile', 
-    { 
-      method: 'POST' , 
-      headers: {'Accept': '*/*','Content-Type': 'multipart/form-data'},
-      body: formData
-    })
-    .then((response) => response.json())
-    .catch(function (error) {
-      console.log('setNotifications error: ', error);
-      
-    });
-    console.log(response);
+    if(data.uri){
+      confirmUpload(formData);
+    }
   }
 
   const stopRecord = () => {
@@ -88,20 +78,83 @@ function OpenCamera({props , navigation}) {
     setMode(modes[!modes.indexOf(mode) * 1]);
   }
 
-  const createAlert = (data) =>
+  const handleFlash = () =>{
+    setFlashState(!flashState);
+
+  }
+
+  const uploadFile = async (formData) =>{
+    let response = await fetch('http://192.168.0.19:80/api/fotos_map/uploadFile', 
+    { 
+      method: 'POST' , 
+      headers: {'Accept': '*/*','Content-Type': 'multipart/form-data'},
+      body: formData
+    })
+    .then((response) => response.json())
+    .catch(function (error) {
+      console.log('setNotifications error: ', error);
+      return false;
+    });
+    console.log(response);
+    return !!response.fileDownloadUri;
+  }
+
+  const confirmUpload = (formData) =>
   Alert.alert(
-    "Archivo subido correctamente",
-    data,
+    "¿Desea subir el siguiente archivo?",
+    "nombre archivo y numero",
     [
       {
-        text: "Cancel",
+        text: "No",
         onPress: () => console.log("Cancel Pressed"),
         style: "cancel"
       },
-      { text: "OK", onPress: () => console.log("OK Pressed") }
+      { text: "Si", onPress: async () => {
+          let uploadState = await uploadFile(formData);
+          uploadMessage(uploadState);
+
+        }
+      }
     ],
     { cancelable: false }
   );
+
+  const uploadMessage = (uploaded) =>{
+    let message = "";
+    uploaded ? message = "El archivo se subio correctamente." : message = "Ocurrio un error al subir el archivo.";
+    Alert.alert(
+      "",
+      message,
+      [
+        {
+          text: "OK",
+          style: "cancel"
+        }
+      ],
+      { cancelable: true }
+    );
+  }
+
+  useEffect(() => {
+    let secTimer;
+    if(isRecording){
+      secTimer = setInterval( () => {
+        let currentDate = new Date();
+        let difference = currentDate.getTime() - dateNow.getTime();
+
+        let counter = new Date("2021-03-01T00:00:00.000Z").getTime() + new Date(difference).getTime();
+        counter = new Date(counter);
+
+        let minutes = counter.getMinutes();
+        let seconds = counter.getSeconds();
+        setDuration(`${minutes > 9 ? minutes : '0' + minutes}:${seconds > 9 ? seconds : '0' + seconds}`);
+      },1000)
+    }else{
+      setDuration("00:00")
+    }
+
+    return () => clearInterval(secTimer);
+  }, [isRecording]);
 
   return (
     <View style={styles.container}>
@@ -109,29 +162,45 @@ function OpenCamera({props , navigation}) {
         ref={cameraRef}
         type={type}
         style={styles.view}
+        flashMode={flashState ? RNCamera.Constants.FlashMode.torch : RNCamera.Constants.FlashMode.off}
+        useNativeZoom={true}
+        playSoundOnCapture={true}
+        playSoundOnRecord={true}
       > 
-        <TouchableOpacity style={styles.closeButton} onPress={()=>closeCamera()} >
-          <Icon name={"close"} style={styles.fontColor} size={35}/>
-        </TouchableOpacity>
-        <View style={styles.panelBottom}>
+        <View style={styles.topPanel}>
+          <Text style={styles.invisibleItem}></Text>
+          <Text style={[styles.recordDuration , {display: mode === 'video' ? 'flex' : 'none'}]}>{duration}</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={()=>closeCamera()} disabled={isRecording}>
+            <Icon name={"close"} style={[styles.fontColor, {opacity: isRecording ? 0.3 : 1}]} size={35}/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.bottomPanel}>
           <TouchableOpacity
-            onPress={mode === 'camera' ? takePhoto : record}
+            onPress={mode === 'camera' ? takePhoto : isRecording ? stopRecord : record}
             style={[styles.roundedButton , styles.capture]}
           >
-            <Icon name={mode === 'camera' ? 'camera' : 'videocam'} style={styles.fontColor} size={35}/>
+            {mode === 'camera' ?
+              <Icon name={'camera'} style={styles.fontColor} size={35}/> 
+              : 
+              isRecording ? 
+                <Icon name={'stop'} style={{color:'red'}} size={35}/> 
+                :
+                <MaterialIcon name={'fiber-manual-record'} style={{color:'red'}} size={55}></MaterialIcon>
+            }
 
           </TouchableOpacity>
           <TouchableOpacity
               onPress={switchMode}
-              style={[styles.roundedButton , styles.switchButton]}
+              style={[styles.roundedButton , styles.switchButton , {opacity: isRecording ? 0.3 : 1}]}
+              disabled={isRecording}
             >
               <Icon name={mode === 'camera' ? 'videocam' : 'camera'} style={styles.fontColor} size={25}/>
           </TouchableOpacity>
           <TouchableOpacity
-              onPress={stopRecord}
-              style={[styles.roundedButton , styles.stopButton]}
+              onPress={handleFlash}
+              style={[styles.roundedButton , styles.flashButton]}
             >
-              <Icon name={'stop'} style={{color:'red'}} size={25}/>
+              <Icon name={flashState ? 'flash-off' : 'flash'} style={styles.fontColor} size={25}/>
           </TouchableOpacity>
         </View>
       </RNCamera>
@@ -142,14 +211,19 @@ function OpenCamera({props , navigation}) {
   
   const styles = StyleSheet.create({
     container: {
-      flex: 1,
+      flex: 1
     },
     view: {
       flex: 1,
       flexDirection: 'column',
       justifyContent: 'space-between'
     },
-    panelBottom: {
+    topPanel: {
+      justifyContent:'center',
+      alignItems:'center',
+      flexDirection:'row'
+    },
+    bottomPanel: {
       alignItems:'center',
       justifyContent:'center'
     },
@@ -159,7 +233,7 @@ function OpenCamera({props , navigation}) {
       marginBottom:15
     },
     closeButton: {
-      alignSelf:'flex-end'
+      marginLeft: 'auto'
     },
     fontColor: {
       color: '#fff'
@@ -176,14 +250,29 @@ function OpenCamera({props , navigation}) {
       width:45,
       height:45,
       position: 'absolute',
-      left:'20%'
+      right:'25%'
     
     },
-    stopButton: {
+    flashButton: {
       width:45,
       height:45,
       position:'absolute',
-      right:'20%'
+      left:'25%'
+    },
+    recordDuration: {
+      color:'#FFF',
+      fontSize:16,
+      borderWidth:2,
+      borderColor:'#3CD0AD',      
+      borderRadius:30,
+      textAlign:'center',
+      paddingHorizontal:5,
+      paddingTop:5,
+      marginLeft:50,
+    },
+    invisibleItem: {
+      marginRight: 'auto',
+      opacity: 0
     }
   });
 
