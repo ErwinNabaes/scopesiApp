@@ -54,3 +54,13 @@ export const getFiles = (idEmpresa , idUbicacion) =>{
     })
     .then((response) => response.data);
 }
+
+export const getAddressByCoordinates = (lat , lng) =>{
+    let url = endpoints.googleApi + lat + ',' + lng + '&key=AIzaSyANGywbfxItEbdle738SiU-AVJGIjadVYM';
+    return axios.get(url)
+    .catch(function (error) {
+        console.log('setNotifications error: ', error);
+    })
+    .then((response) => response.data);
+    
+}

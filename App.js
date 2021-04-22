@@ -18,12 +18,13 @@ import Gallery from './src/components/gallery';
 import Form from './src/components/form';
 import Relevamientos from './src/components/relevamientos';
 import RelevamientoView from './src/components/relevamientoView';
-
+import EntryView from './src/components/entryView';
 
 const Stack = createStackNavigator();
 
 function App (){
-  const [token, setToken] = useState(MMKV.getString('token') !== undefined ? MMKV.getString('token') : '');
+  const [token, setToken] = useState(MMKV.getString('token') !== undefined || MMKV.getString('token') !== '' ? MMKV.getString('token') : '');
+  const [loading, setLoading] = useState(false);
 
   return (
     <NavigationContainer>
@@ -32,9 +33,10 @@ function App (){
         <>
         <Stack.Screen 
           name="Home"
-          component={Home}
-          options={{headerLeft: null}}
-        />
+          options={{ headerLeft: null }}
+        >
+          {props => <Home {...props} setToken={setToken} loading={loading} setLoading={setLoading}></Home>}
+        </Stack.Screen>
         <Stack.Screen 
           name="Camera"
           component={OpenCamera}
@@ -58,6 +60,12 @@ function App (){
           component={RelevamientoView}
           options={{ title: 'Detalles' }}
         />
+        <Stack.Screen 
+          name={"EntryView"}
+          options={{ title: 'Nueva entrada' }}
+        >
+          {props => <EntryView {...props} loading={loading} setLoading={setLoading}></EntryView>}
+        </Stack.Screen>
         </>
       ) : (
         <>
@@ -65,7 +73,7 @@ function App (){
           name="Login"
           options={{headerShown: false}}
         >
-          {props => <Login {...props} setToken={setToken}></Login>}
+          {props => <Login {...props} setToken={setToken} loading={loading} setLoading={setLoading}></Login>}
         </Stack.Screen>
         </>
       )}

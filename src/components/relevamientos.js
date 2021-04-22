@@ -8,30 +8,32 @@ import {
 
 function Relevamientos ({ navigation }){
     const styles = require('../styles/style');
-    const openRelevamiento = (key) => {
-        navigation.navigate('Relevamiento' , {nombreRelevamiento : key});
+    const openRelevamiento = (item) => {
+        navigation.navigate('Relevamiento' , {nombreRelevamiento : item.name , direcciones : item.address});
     };
 
     return(
-        <View style={styles.relevamientoContainer}>
+        <View style={styles.flexJustifyCenter}>
             <FlatList
                 data={[
-                {key: 'Relevamiento 1'},
-                {key: 'Relevamiento 2'},
-                {key: 'Relevamiento 3'},
+                {name: 'Relevamiento 1', address: true},
+                {name: 'Relevamiento 2', address: true},
+                {name: 'Relevamiento 3', address: false},
 
                 ]}
                 renderItem={({item}) =>   
                     <View style={[styles.buttonContainer , {alignSelf:'center'}]}>          
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={() => {openRelevamiento(item.key)}}
+                        onPress={() => {openRelevamiento(item)}}
                         accessibilityLabel="Ver relevamiento"
                     >
-                        <Text style={styles.buttonText}>{item.key}</Text>
+                        <Text style={styles.buttonText}>{item.name}</Text>
+                        <Text style={styles.buttonText}>{item.address}</Text>
                     </TouchableOpacity>
                     </View>
                 }
+                keyExtractor={item => item.name}
             />
         </View>
     );

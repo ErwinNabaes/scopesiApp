@@ -29,6 +29,12 @@ module.exports = StyleSheet.create({
     buttonText: {
       color: 'white',
       fontSize: 17
+    },
+    modalView: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 22,
     }, 
 
   /*-----------Login styles-----------*/
@@ -46,12 +52,6 @@ module.exports = StyleSheet.create({
       marginBottom:'10%',
       width:300,
       height:70,
-    },
-    modalView: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      marginTop: 22
     },
   
     /*-----------Home styles-----------*/
@@ -139,10 +139,22 @@ module.exports = StyleSheet.create({
       right:'4%'
     },
     
-    /*-----------Camera styles-----------*/
-    relevamientoContainer: {
+    /*-----------relevamientos styles-----------*/
+    flexJustifyCenter: {
       flex: 1,
       backgroundColor: '#343a40',
       justifyContent: 'center',
+    },
+
+    /*-----------relevamientoView styles-----------*/
+    flexAlignCenter: {
+      flex: 1,
+      backgroundColor: '#343a40',
+      alignItems: 'center'
+    },
+    entryButton:{
+      backgroundColor:'#5b6064',
+      margin:10,
+      borderRadius:4
     },
   });

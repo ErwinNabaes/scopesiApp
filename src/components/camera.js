@@ -217,12 +217,12 @@ function OpenCamera({props , navigation}) {
           >
             <Icon name={flashState ? 'flash-off' : 'flash'} style={styles.fontColor} size={25}/>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={()=>openGallery()}
             style={[styles.squaredButton , styles.folderButton]}
           >
             <Icon name={'images-sharp'} style={styles.fontColor} size={25}/>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </RNCamera>
     </View>
