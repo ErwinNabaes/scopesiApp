@@ -13,6 +13,7 @@ function Home ({ setToken , loading , setLoading, navigation }){
     const logOut = () => {
         setLoading(true);
         MMKV.set('token' , '');
+        MMKV.set('idUsuario' , '');
         setToken('');
         setLoading(false);
     };
@@ -47,7 +48,7 @@ function Home ({ setToken , loading , setLoading, navigation }){
                     <Text style={styles.buttonText}>Abrir Camara</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.buttonContainer}>
+            {/* <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.button}
                     onPress={() => {openFormsList()}}
@@ -55,7 +56,7 @@ function Home ({ setToken , loading , setLoading, navigation }){
                 >
                     <Text style={styles.buttonText}>Ver Relevamientos</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
             <Loader loading={loading}></Loader>
         </View>
     );

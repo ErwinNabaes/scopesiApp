@@ -5,7 +5,7 @@ import { MMKV } from 'react-native-mmkv';
 /* REQUEST INTERCEPTOR */
 axios.interceptors.request.use(function (config) {
     const token = MMKV.getString('token');
-    console.log(token);
+    
     if (token) {
         const headers = {
             "Authorization": "Bearer " + token
@@ -34,11 +34,11 @@ export const getToken = (username , password) => {
     .then((response) => response);
 }
 
-export const uploadFile = (formData) =>{
-    let url = endpoints.uploadFile;
-    let config = { headers : {'Accept': '*/*','Content-Type': 'multipart/form-data'} }
+export const uploadFile = (formData , idUsuario, folder , fileName) =>{
+    let url = endpoints.uploadFile + idUsuario + '/' + folder + '/' + fileName;
+    console.log(url);
     
-    return axios.post(url, formData, config )
+    return axios.post(url, formData)
     .catch(function (error) {
         console.log('setNotifications error: ', error);
         return false;

@@ -43,9 +43,7 @@ function OpenCamera({props , navigation}) {
     };
 
     const formData = new FormData();
-    formData.append('file', photo);
-    formData.append('idEmpresa', 25);
-    formData.append('idUbicacion', 43673);
+    formData.append('file', photo , name + '.jpg');
 
     if(data.uri){
       confirmUpload(formData , photo);
@@ -105,10 +103,21 @@ function OpenCamera({props , navigation}) {
 
   }
 
-  const uploadFile = async (formData) => {
-    let response = await service.uploadFile(formData); 
-
-    return response && !!response.fileDownloadUri;
+  const uploadFile = async (formData , fileName) => {
+    let idUsuario = MMKV.getNumber('idUsuario');
+    if(!idUsuario){
+      return false;
+    }else{
+      let date = new Date().getDate();
+      let month = new Date().getMonth() + 1;
+      let year = new Date().getFullYear();
+  
+      let currentDate = date + '-' + month + '-' + year;
+   
+      let response = await service.uploadFile(formData , idUsuario , currentDate , fileName); 
+  
+      return response && !!response.fileDownloadUri;
+    }
   }
 
   const confirmUpload = (formData , file) => {
@@ -122,7 +131,7 @@ function OpenCamera({props , navigation}) {
           style: "cancel"
         },
         { text: "Si", onPress: async () => {
-            let uploadState = await uploadFile(formData);
+            let uploadState = await uploadFile(formData , file.name);
             uploadMessage(uploadState);
           }
         }

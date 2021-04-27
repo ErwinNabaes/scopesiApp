@@ -23,7 +23,7 @@ import EntryView from './src/components/entryView';
 const Stack = createStackNavigator();
 
 function App (){
-  const [token, setToken] = useState(MMKV.getString('token') !== undefined || MMKV.getString('token') !== '' ? MMKV.getString('token') : '');
+  const [token, setToken] = useState(MMKV.getString('token') ? MMKV.getString('token') : '');
   const [loading, setLoading] = useState(false);
 
   return (

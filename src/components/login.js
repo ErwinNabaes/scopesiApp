@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as service from '../utils/serviceManager';
 import { MMKV } from 'react-native-mmkv';
+import Icon from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import {
   StatusBar,
   View,
@@ -20,6 +21,7 @@ function Login ({ setToken , loading , setLoading}){
   const [password , setPassword] = useState("");
   const [authenticated , setAuthenticated] = useState(false);
   const [error , setError] = useState(false);
+  const [passwordSecurity , setPasswordSecurity] = useState(true);
 
   const onChangeText = (text) => {
     setUsername(text);
@@ -29,16 +31,21 @@ function Login ({ setToken , loading , setLoading}){
     setPassword(text);
   };
 
+  const togglePasswordVisibility = () =>{
+    setPasswordSecurity(!passwordSecurity);
+  }
+
   const signIn = async () => {
     setLoading(true);
     setError(false);
     
     let response = await service.getToken(username , password);
- 
-    if(response != 'error' && response.data.token){
+
+    if(response != 'error' && response.data.token && response.data.usuario){
       setLoading(false);
       setAuthenticated(true);
       MMKV.set('token' , response.data.token);
+      MMKV.set('idUsuario' , response.data.usuario.id);
       setToken(response.data.token);
     } else {
       setLoading(false);
@@ -50,20 +57,23 @@ function Login ({ setToken , loading , setLoading}){
   return (
       <View style={[styles.container , {opacity: loading ? 0.8 : 1}]}>
         <Image style={styles.logo} source={require('../assets/images/scopesilogo.png')} />
-            <TextInput style={styles.input}
-              onChangeText={text => onChangeText(text)}
-              value={username}
-              autoCapitalize='none'
-              placeholder='Usuario'
-            />
-            <TextInput 
-              style={styles.input} 
-              onChangeText={text => onChangePassword(text)} 
-              value={password} 
-              secureTextEntry={true}
-              autoCapitalize='none'
-              placeholder='Contraseña'
-            />
+        <TextInput style={styles.input}
+          onChangeText={text => onChangeText(text)}
+          value={username}
+          autoCapitalize='none'
+          placeholder='Usuario'
+        />
+        <View style={styles.passwordContainer}>
+          <TextInput 
+            style={styles.input} 
+            onChangeText={text => onChangePassword(text)} 
+            value={password} 
+            secureTextEntry={passwordSecurity}
+            autoCapitalize='none'
+            placeholder='Contraseña'
+          />
+          <Icon name={passwordSecurity ? 'eye' : 'eye-off'} style={styles.passwordIcon} size={20} onPress={() =>togglePasswordVisibility()}></Icon>
+        </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button , { opacity: username === '' || password === '' || loading ? 0.3 : 1}]}

@@ -53,6 +53,16 @@ module.exports = StyleSheet.create({
       width:300,
       height:70,
     },
+    passwordContainer:{
+      flexDirection:'row', 
+      alignItems: 'center'
+    },
+    passwordIcon:{
+      color:'#FFF',
+      position: 'absolute',
+      right: -30,
+      top: 20
+    },
   
     /*-----------Home styles-----------*/
     text: {
