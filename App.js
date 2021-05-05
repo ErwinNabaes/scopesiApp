@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { MMKV } from 'react-native-mmkv';
@@ -33,15 +33,16 @@ function App (){
         <>
         <Stack.Screen 
           name="Home"
-          options={{ headerLeft: null }}
+          options={{ headerLeft: null, title:'Inicio' }}
         >
           {props => <Home {...props} setToken={setToken} loading={loading} setLoading={setLoading}></Home>}
         </Stack.Screen>
         <Stack.Screen 
           name="Camera"
-          component={OpenCamera}
           options={{headerShown: false}}
-        />
+        >
+          {props => <OpenCamera {...props} loading={loading} setLoading={setLoading}></OpenCamera>}
+        </Stack.Screen>
         <Stack.Screen 
           name="Galería"
           component={Gallery}

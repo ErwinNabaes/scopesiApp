@@ -36,7 +36,6 @@ export const getToken = (username , password) => {
 
 export const uploadFile = (formData , idUsuario, folder , fileName) =>{
     let url = endpoints.uploadFile + idUsuario + '/' + folder + '/' + fileName;
-    console.log(url);
     
     return axios.post(url, formData)
     .catch(function (error) {
@@ -46,8 +45,8 @@ export const uploadFile = (formData , idUsuario, folder , fileName) =>{
     .then((response) => response.data);
 }
 
-export const getFiles = (idEmpresa , idUbicacion) =>{
-    let url = endpoints.getFiles + idEmpresa + '/' + idUbicacion;
+export const getFiles = (idUsuario , folder) =>{
+    let url = endpoints.getFiles + idUsuario + '/' + folder;
     return axios.get(url)
     .catch(function (error) {
         console.log('setNotifications error: ', error);

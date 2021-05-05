@@ -1,19 +1,23 @@
 import React, { Component, useEffect, useState } from 'react';
-import * as service from '../utils/serviceManager';
-import Camera, { RNCamera } from 'react-native-camera';
+import { RNCamera } from 'react-native-camera';
 import { useCamera } from 'react-native-camera-hooks';
+import { MMKV } from 'react-native-mmkv';
 import Icon from 'react-native-vector-icons/dist/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons';
-import { MMKV } from 'react-native-mmkv';
+import Octicons from 'react-native-vector-icons/dist/Octicons';
+import * as service from '../utils/serviceManager';
+import Loader from './loader';
+import styles from '../styles/style';
 import {
   View,
   Text,
   TouchableOpacity,
-  Alert
+  Alert,
+  Modal,
+  Dimensions
 } from 'react-native';
 
-function OpenCamera({props , navigation}) {   
-  const styles = require('../styles/style');
+function OpenCamera({loading , setLoading, props , navigation}) {   
   const [mode , setMode] = useState('camera');
   const [isRecording , setIsRecording] = useState(false);
   const [flashState , setFlashState] = useState(false);
@@ -23,61 +27,40 @@ function OpenCamera({props , navigation}) {
     { cameraRef, type },
     { takePicture , recordVideo },
   ] = useCamera(props);
+  const [ratioSelected , setRatioSelected] = useState(MMKV.getString('ratio') ? MMKV.getString('ratio') : '4:3');
+  const [imageQuality , setImageQualityValue] = useState(MMKV.getNumber('imageQuality') ? MMKV.getNumber('imageQuality') : 0.5);
+  const [videoQuality , setVideoQualityValue] = useState(MMKV.getString('videoQuality') ? MMKV.getString('videoQuality') : '480p');
+  const [modalConfigState , setModalConfigState] = useState(false);
+  const [isLandscape , setIsLandscape] = useState(Dimensions.get('window').width > Dimensions.get('window').height);
 
   const takePhoto = async () => {
-    const data = await takePicture();
-
-    if(MMKV.getNumber('fileNumber')){
-      let number = MMKV.getNumber('fileNumber') + 1;
-      MMKV.set('fileNumber' , number);
-    }else{
-      MMKV.set('fileNumber' , 1);
-    }
-
-    let name = MMKV.getNumber('fileNumber');
-
+    const options = { quality: imageQuality};
+    const data = await takePicture(options);
+    
     let photo = {
       uri: data.uri,
       type: 'image/jpeg',
-      name: `${name + '.jpg'}`,
     };
 
-    const formData = new FormData();
-    formData.append('file', photo , name + '.jpg');
-
     if(data.uri){
-      confirmUpload(formData , photo);
+      confirmUpload(photo);
     }
   }
 
   const record = async () => {
     setDateNow(new Date());
     setIsRecording(true);
-    const data = await recordVideo({maxDuration:60});
-    setIsRecording(false);
-
-    if(MMKV.getNumber('fileNumber')){
-      let number = MMKV.getNumber('fileNumber') + 1;
-      MMKV.set('fileNumber' , number);
-    }else{
-      MMKV.set('fileNumber' , 1);
-    }
-
-    let name = MMKV.getNumber('fileNumber');
+    const options = { quality: videoQuality , maxDuration:60};
+    const data = await recordVideo(options);
+    setIsRecording(false);   
 
     let video = {
       uri: data.uri,
       type: 'video/mp4',
-      name: `${name + '.mp4'}`,
     };
     
-    const formData = new FormData();
-    formData.append('file', video);
-    formData.append('idEmpresa', 25);
-    formData.append('idUbicacion', 43673);
-
     if(data.uri){
-      confirmUpload(formData , video);
+      confirmUpload(video);
     }
   }
 
@@ -103,27 +86,43 @@ function OpenCamera({props , navigation}) {
 
   }
 
-  const uploadFile = async (formData , fileName) => {
+  const uploadFile = async (file) => {
     let idUsuario = MMKV.getNumber('idUsuario');
     if(!idUsuario){
       return false;
-    }else{
-      let date = new Date().getDate();
-      let month = new Date().getMonth() + 1;
-      let year = new Date().getFullYear();
-  
-      let currentDate = date + '-' + month + '-' + year;
-   
-      let response = await service.uploadFile(formData , idUsuario , currentDate , fileName); 
-  
-      return response && !!response.fileDownloadUri;
     }
+
+    await checkFileNumber();
+    let numberName = MMKV.getNumber('fileNumber');
+    
+    if(numberName){
+      let newNumberName = numberName + 1;
+      MMKV.set('fileNumber' , newNumberName);
+    }else{
+      MMKV.set('fileNumber' , 1);
+    }
+
+    let name = MMKV.getNumber('fileNumber');
+
+    file = {...file , name : file.type == 'image/jpeg' ? name + '.jpg' : name + '.mp4'};
+
+    const formData = new FormData();
+    formData.append('archivo', file , file.name);
+
+    let date = new Date().getDate();
+    let month = new Date().getMonth() + 1;
+    let year = new Date().getFullYear();
+    let currentDate = date + '-' + month + '-' + year;
+  
+    let response = await service.uploadFile(formData , idUsuario , currentDate , file.name); 
+    
+    return {file , status: response && response.status === 'ok'};
   }
 
-  const confirmUpload = (formData , file) => {
+  const confirmUpload = (file) => {
     Alert.alert(
-      "¿Desea subir el siguiente archivo?",
-      `Nombre de archivo: ${file.name}`,
+      "",
+      '¿Desea subir el archivo?',
       [
         {
           text: "No",
@@ -131,8 +130,9 @@ function OpenCamera({props , navigation}) {
           style: "cancel"
         },
         { text: "Si", onPress: async () => {
-            let uploadState = await uploadFile(formData , file.name);
-            uploadMessage(uploadState);
+            setLoading(true);
+            let response = await uploadFile(file);
+            uploadMessage(response.status , response.file.name);
           }
         }
       ],
@@ -140,11 +140,12 @@ function OpenCamera({props , navigation}) {
     );
   }
 
-  const uploadMessage = (uploaded) => {
+  const uploadMessage = (uploaded , fileName) => {
+    setLoading(false);
     let message = "";
-    uploaded ? message = "El archivo se subio correctamente." : message = "Ocurrio un error al subir el archivo.";
+    uploaded ? message = "El archivo se subio correctamente." : message = "Ocurrio un error al subir este archivo.";
     Alert.alert(
-      "",
+      "Archivo: " + fileName,
       message,
       [
         {
@@ -154,6 +155,47 @@ function OpenCamera({props , navigation}) {
       ],
       { cancelable: true }
     );
+  }
+
+  const checkFileNumber = async () =>{
+    let date = MMKV.getNumber('date');
+    let today = new Date().getDay();
+    
+    if(date && date !== today){
+        MMKV.set('date' , today);
+        MMKV.set('fileNumber', 0);
+    }else{
+        MMKV.set('date' , today);
+    }
+  };
+
+  // const prepareRatio = async () => {
+  //   if (Platform.OS === 'android' && cameraRef) {
+  //   console.log(cameraRef);
+  //   console.log(cameraRef.renderChildren);
+  //   }
+  // }
+
+  const setRatio = (value) =>{
+    setRatioSelected(value);
+    MMKV.set('ratio' , value);
+  }
+
+  const setImageQuality = (value) =>{
+    setImageQualityValue(value);
+    MMKV.set('imageQuality' , value);
+
+  }
+
+  const setVideoQuality = (value) =>{
+    setVideoQualityValue(value);
+    MMKV.set('videoQuality' , value);
+
+  }
+
+  const checkDimension = () =>{
+    let state = Dimensions.get('window').width > Dimensions.get('window').height;
+    setIsLandscape(state);
   }
 
   useEffect(() => {
@@ -177,22 +219,37 @@ function OpenCamera({props , navigation}) {
     return () => clearInterval(secTimer);
   }, [isRecording]);
 
+  useEffect(() => {
+    Dimensions.addEventListener('change', checkDimension);
+
+    return () => { 
+      Dimensions.removeEventListener('change'); 
+    }
+  }, []);
+
   return (
     <View style={styles.cameraContainer}>
       <RNCamera
         ref={cameraRef}
         type={type}
+        // onCameraReady={prepareRatio}
         style={styles.cameraView}
-        flashMode={flashState ? RNCamera.Constants.FlashMode.torch : RNCamera.Constants.FlashMode.off}
+        flashMode={flashState ? RNCamera.Constants.FlashMode.on : RNCamera.Constants.FlashMode.off}
         useNativeZoom={true}
-        playSoundOnCapture={false}
+        ratio={ratioSelected}
+        playSoundOnCapture={true}
         playSoundOnRecord={true}
       > 
         <View style={styles.topPanel}>
-          <Text style={styles.invisibleItem}></Text>
-          <Text style={[styles.recordDuration , {display: mode === 'video' ? 'flex' : 'none'}]}>{duration}</Text>
           <TouchableOpacity 
-            style={styles.closeButton}
+            onPress={() => setModalConfigState(true)}
+            disabled={isRecording}
+            style={{marginLeft:5}}
+          >
+            <Octicons name={"gear"} style={[styles.fontColor, {opacity: isRecording ? 0.3 : 1}]} size={30}/>
+          </TouchableOpacity>
+          <Text style={[styles.recordDuration , {display: mode === 'video' ? 'flex' : 'none'}]}>{duration}</Text>
+          <TouchableOpacity     
             onPress={()=>closeCamera()}
             disabled={isRecording}
           >
@@ -224,7 +281,7 @@ function OpenCamera({props , navigation}) {
             onPress={handleFlash}
             style={[styles.roundedButton , styles.flashButton]}
           >
-            <Icon name={flashState ? 'flash-off' : 'flash'} style={styles.fontColor} size={25}/>
+            <Icon name={flashState ? 'flash' : 'flash-off'} style={styles.fontColor} size={25}/>
           </TouchableOpacity>
           {/* <TouchableOpacity
             onPress={()=>openGallery()}
@@ -234,6 +291,98 @@ function OpenCamera({props , navigation}) {
           </TouchableOpacity> */}
         </View>
       </RNCamera>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalConfigState}
+        onRequestClose={() => { setModalConfigState(false); } }
+      >
+        <View
+          style={styles.modalConfigView}
+        >
+          <View style={[styles.configView , {height: isLandscape ? '86%' : '48%' }]}>
+          <Text style={[styles.fontColor , {fontSize:18 , alignSelf:'center', marginBottom:'2%'}]}>Configuraci&oacute;n</Text>
+            <Text style={[styles.fontColor , {fontSize:16 , margin:'0.5%'}]}>Tamaño de imagen: </Text>
+            <View style={{ marginVertical:'1%' , justifyContent:'space-between', width: isLandscape ? '70%' : '80%' ,alignSelf:'center', flexDirection:'row'}}>
+              <TouchableOpacity
+                onPress={() => setRatio('1:1')}
+                style={[styles.configButton , {backgroundColor: ratioSelected === '1:1' ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>1:1</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setRatio('4:3')}
+                style={[styles.configButton , {backgroundColor: ratioSelected === '4:3' ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>4:3</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setRatio('16:9')}
+                style={[styles.configButton , {backgroundColor: ratioSelected === '16:9' ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>16:9</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.fontColor , {fontSize:16 , margin:'0.5%'}]}>Calidad de imagen: </Text>
+            <View style={{ marginVertical:'1%' , justifyContent:'space-between', width: isLandscape ? '70%' : '80%' , alignSelf:'center', flexDirection:'row'}}>
+              <TouchableOpacity
+                onPress={() => setImageQuality(0.2)}
+                style={[styles.configButton , {backgroundColor: imageQuality === 0.2 ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>Minima</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setImageQuality(0.5)}
+                style={[styles.configButton , {backgroundColor: imageQuality === 0.5 ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>Baja</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setImageQuality(1)}
+                style={[styles.configButton , {backgroundColor: imageQuality === 1 ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>Normal</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.fontColor , {fontSize:16 , margin:'0.5%'}]}>Calidad de video: </Text>
+            <View style={{ marginVertical:'1%' , justifyContent:'space-between', width: isLandscape ? '70%' : '80%' ,alignSelf:'center', flexDirection:'row'}}>
+              <TouchableOpacity
+                onPress={() => setVideoQuality('480p')}
+                style={[styles.configButton , {backgroundColor: videoQuality === '480p' ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>480p</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setVideoQuality('720p')}
+                style={[styles.configButton , {backgroundColor: videoQuality === '720p' ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>720p</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setVideoQuality('1080p')}
+                style={[styles.configButton , {backgroundColor: videoQuality === '1080p' ? '#3CD0AD' : '#5d636b'}]}
+              >
+                <Text style={styles.fontColor}>1080p</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity 
+              onPress={()=>setModalConfigState(false)}
+              style={styles.closeConfigButton}
+            >
+              <Text style={styles.fontColor}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <Loader loading={loading}></Loader>
     </View>
   );
 

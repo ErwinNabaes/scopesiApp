@@ -35,7 +35,14 @@ module.exports = StyleSheet.create({
       justifyContent: "center",
       alignItems: "center",
       marginTop: 22,
+    },
+    fontColor: {
+      color: '#fff'
     }, 
+    textCenter: {
+      justifyContent:'center',
+      alignSelf:'center'
+    },
 
   /*-----------Login styles-----------*/
     input: {
@@ -63,11 +70,6 @@ module.exports = StyleSheet.create({
       right: -30,
       top: 20
     },
-  
-    /*-----------Home styles-----------*/
-    text: {
-      color:'#ffffff'
-    },
 
     /*-----------Camera styles-----------*/
     cameraContainer: {
@@ -79,7 +81,7 @@ module.exports = StyleSheet.create({
       justifyContent: 'space-between'
     },
     topPanel: {
-      justifyContent:'center',
+      justifyContent:'space-between',
       alignItems:'center',
       flexDirection:'row'
     },
@@ -91,12 +93,6 @@ module.exports = StyleSheet.create({
       width:80,
       height:80,
       marginBottom:15
-    },
-    closeButton: {
-      marginLeft: 'auto'
-    },
-    fontColor: {
-      color: '#fff'
     },
     roundedButton:{
       alignItems:'center',
@@ -136,17 +132,41 @@ module.exports = StyleSheet.create({
       textAlign:'center',
       paddingHorizontal:5,
       paddingTop:5,
-      marginLeft:50,
-    },
-    invisibleItem: {
-      marginRight: 'auto',
-      opacity: 0
-    },    
+    },   
     folderButton: {
       width:40,
       height:40,
       position:'absolute',
       right:'4%'
+    },
+    modalConfigView: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    configView: {
+      width:'85%',
+      backgroundColor: '#343a40',
+      borderRadius: 4
+    },
+    configButton: {
+      width: 80,
+      height:30, 
+      alignItems:'center',
+      justifyContent:'center',
+      borderRadius: 3,
+      marginVertical:10
+    },
+    closeConfigButton: {
+      width:50,
+      height:25, 
+      alignItems:'center',
+      justifyContent:'center',
+      borderRadius: 3,
+      alignSelf:'flex-end',
+      marginRight: '2%',
+      marginBottom: '1%',
+      backgroundColor:'#3CD0AD'
     },
     
     /*-----------relevamientos styles-----------*/

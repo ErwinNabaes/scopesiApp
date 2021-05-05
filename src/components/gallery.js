@@ -8,17 +8,34 @@ import {
   Dimensions,
   FlatList,
 } from 'react-native';
-import { useState } from 'react/cjs/react.development';
+import { useState } from 'react';
+import { MMKV } from 'react-native-mmkv';
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
 
 function Gallery() {
     const [slideList , setSlideList] = useState([]);
     const getFiles = async () =>{
-      let response = await service.getFiles(25 , 43673)
+      let idUsuario = MMKV.getNumber('idUsuario');
+
+      let date = new Date().getDate();
+      let month = new Date().getMonth() + 1;
+      let year = new Date().getFullYear();
+  
+      let currentDate = date + '-' + month + '-' + year;
+
+      let response = await service.getFiles(idUsuario , currentDate)
 
       if(response.length != 0){
-        setSlideList(response.map((file) => {
+        setSlideList(response.map((pathFile) => {
+          let regexNameUbicacion = /[/].+[/](.*)/;
+          let fileName = pathFile.match(regexNameUbicacion)[1];
+
+          let file = {
+            url : 'http://geoplanningmas.com/ar/v2/apifiles/' + pathFile,
+            fileName : fileName
+          };
+
           return file;
         }));
       }
@@ -28,7 +45,8 @@ function Gallery() {
     },[]);
 
     return (
-      <View style={{flex: 1 }}>   
+      <View style={{flex: 1 }}> 
+      {console.log(slideList)}  
         {slideList.length != 0 ?
           <FlatList
             data={slideList}
@@ -69,11 +87,11 @@ function Slide({ data }) {
         />
         : */}
         <Image
-          source={{ uri: data.fileDownloadUri }}
+          source={{ uri: data.url }}
           style={{ marginTop: '5%' , width: windowWidth * 0.9, height: windowHeight * 0.7}}
         ></Image>
         {/* } */}
-        <Text style={{ fontSize: 24 }}>{data.name}</Text>
+        <Text style={{ fontSize: 24 }}>{data.fileName}</Text>
       </View>
     );
 }

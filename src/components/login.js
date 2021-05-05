@@ -9,9 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
-  Keyboard,
-  Modal
+  Keyboard
 } from 'react-native';
 import Loader from './loader';
 
