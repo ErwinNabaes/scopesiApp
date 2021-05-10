@@ -39,7 +39,7 @@ function Login ({ setToken , loading , setLoading}){
     
     let response = await service.getToken(username , password);
 
-    if(response != 'error' && response.data.token && response.data.usuario){
+    if(!response.error && response.data.token && response.data.usuario){
       setLoading(false);
       setAuthenticated(true);
       MMKV.set('token' , response.data.token);
@@ -84,7 +84,13 @@ function Login ({ setToken , loading , setLoading}){
         </View>
           {!authenticated && error && <Text style={{color:'#f0f0f0' , paddingTop:5}}>Usuario y/o contraseña incorrectos</Text>}
         <Loader loading={loading}></Loader>
-        <StatusBar style="auto"/>
+        <StatusBar
+          animated={true}
+          backgroundColor="#343a40"
+          barStyle={'default'}
+          showHideTransition={'none'}
+          hidden={false}
+        />
       </View>
   );
 };

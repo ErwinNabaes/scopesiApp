@@ -73,26 +73,34 @@ module.exports = StyleSheet.create({
 
     /*-----------Camera styles-----------*/
     cameraContainer: {
-      flex: 1
+      flex: 1,
     },
     cameraView: {
       flex: 1,
       flexDirection: 'column',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
     },
     topPanel: {
       justifyContent:'space-between',
       alignItems:'center',
-      flexDirection:'row'
+      flexDirection:'row',
+      position:'absolute',
+      top:0,
+      width:'100%',
+      zIndex:1000
     },
     bottomPanel: {
       alignItems:'center',
-      justifyContent:'center'
+      justifyContent:'center',
+      flexDirection:'row-reverse',
+      position:'absolute',
+      bottom:0,
+      width:'100%',
+      zIndex:1000
     },
     capture: {    
       width:80,
-      height:80,
-      marginBottom:15
+      height:80
     },
     roundedButton:{
       alignItems:'center',
@@ -113,19 +121,27 @@ module.exports = StyleSheet.create({
     switchButton: {
       width:45,
       height:45,
-      position: 'absolute',
-      right:'25%'
-    
+      marginLeft: 15
     },
     flashButton: {
       width:45,
       height:45,
+      marginRight:15
+    },
+    locationButton: {
+      alignItems:'center',
+      justifyContent:'center',
+      borderWidth:2,     
+      borderRadius:50,
+      backgroundColor:'rgba(52, 52, 52, 0.2)',
+      width:45,
+      height:45,
       position:'absolute',
-      left:'25%'
+      right:15
     },
     recordDuration: {
       color:'#FFF',
-      fontSize:16,
+      fontSize:15,
       borderWidth:2,
       borderColor:'#3CD0AD',      
       borderRadius:30,
@@ -145,13 +161,29 @@ module.exports = StyleSheet.create({
       alignItems: "center",
     },
     configView: {
-      width:'85%',
+      padding:10,
       backgroundColor: '#343a40',
       borderRadius: 4
     },
+    configTitle: {
+      fontSize:18,
+      alignSelf:'center',
+      marginBottom:6
+    },
+    configSubtitle: {
+      color:'#aaa',
+      fontSize:16, 
+      margin:2
+    },
+    configSection: {
+      marginVertical:4,
+      alignSelf:'center',
+      flexDirection:'row'
+    },
     configButton: {
       width: 80,
-      height:30, 
+      height:30,
+      marginHorizontal:5, 
       alignItems:'center',
       justifyContent:'center',
       borderRadius: 3,
@@ -164,8 +196,6 @@ module.exports = StyleSheet.create({
       justifyContent:'center',
       borderRadius: 3,
       alignSelf:'flex-end',
-      marginRight: '2%',
-      marginBottom: '1%',
       backgroundColor:'#3CD0AD'
     },
     

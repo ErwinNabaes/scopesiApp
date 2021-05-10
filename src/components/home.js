@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  StatusBar
 } from 'react-native';
 import Loader from './loader';
 import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons';
@@ -45,7 +46,7 @@ function Home ({ setToken , loading , setLoading, navigation }){
                     onPress={() => {openCamera()}}
                     accessibilityLabel="Camara"
                 >
-                    <Text style={styles.buttonText}>Abrir Camara</Text>
+                    <Text style={styles.buttonText}>Abrir C&aacute;mara</Text>
                 </TouchableOpacity>
             </View>
             {/* <View style={styles.buttonContainer}>
@@ -58,6 +59,13 @@ function Home ({ setToken , loading , setLoading, navigation }){
                 </TouchableOpacity>
             </View> */}
             <Loader loading={loading}></Loader>
+            <StatusBar
+                animated={true}
+                backgroundColor="#343a40"
+                barStyle={'default'}
+                showHideTransition={'none'}
+                hidden={false}
+            />
         </View>
     );
 };
