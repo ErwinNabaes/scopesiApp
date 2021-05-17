@@ -21,6 +21,7 @@ module.exports = StyleSheet.create({
         zIndex:1000
     },
     bottomPanel: {
+        marginRight:5,
         alignItems:'center',
         justifyContent:'center',
         position:'absolute',

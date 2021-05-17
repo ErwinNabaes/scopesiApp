@@ -90,6 +90,7 @@ module.exports = StyleSheet.create({
       zIndex:1000
     },
     bottomPanel: {
+      marginBottom:5,
       alignItems:'center',
       justifyContent:'center',
       flexDirection:'row-reverse',
@@ -197,6 +198,43 @@ module.exports = StyleSheet.create({
       borderRadius: 3,
       alignSelf:'flex-end',
       backgroundColor:'#3CD0AD'
+    },
+     /*-----------cameraPreview styles-----------*/
+    cancelButton:{
+      alignItems:'center',
+      justifyContent:'center',
+      borderWidth:2,
+      borderColor:'#C00',      
+      borderRadius:50,
+      backgroundColor:'rgba(52, 52, 52, 0.2)'
+    },
+    acceptButton:{
+      alignItems:'center',
+      justifyContent:'center',
+      borderWidth:2,
+      borderColor:'#3CD0AD',      
+      borderRadius:50,
+      backgroundColor:'rgba(52, 52, 52, 0.2)'
+    },
+    image: {
+      flex: 1,
+      resizeMode: "cover",
+      justifyContent: "center"
+    },
+    video: {
+      flex: 1,
+      justifyContent: "center"
+    },
+    /*-----------cameraPreview styles-----------*/
+    filePickerView: {
+      flexDirection:'row',
+      justifyContent:'space-between',
+      width:'50%'
+    },
+    filePickerButton: {
+      width:60,
+      height:60,
+      marginBottom:5
     },
     
     /*-----------relevamientos styles-----------*/

@@ -6,10 +6,10 @@ import Geolocation from '@react-native-community/geolocation';
 import Icon from 'react-native-vector-icons/dist/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons';
 import Octicons from 'react-native-vector-icons/dist/Octicons';
-import * as service from '../utils/serviceManager';
 import Loader from './loader';
 import styles from '../styles/style';
 import landscapeStyles from '../styles/landscapeStyles';
+
 import {
   View,
   StatusBar,
@@ -20,7 +20,7 @@ import {
   Dimensions
 } from 'react-native';
 
-function OpenCamera({loading , setLoading, props , navigation}) {   
+function OpenCamera({loading , setLoading, changeFile , props , navigation}) {   
   const [mode , setMode] = useState('camera');
   const [isRecording , setIsRecording] = useState(false);
   const [flashState , setFlashState] = useState(false);
@@ -36,7 +36,7 @@ function OpenCamera({loading , setLoading, props , navigation}) {
   const [modalConfigState , setModalConfigState] = useState(false);
   const [isLandscape , setIsLandscape] = useState(Dimensions.get('window').width > Dimensions.get('window').height);
   const [geoCoordinates , setGeoCoordinates] = useState({lat: null , lng: null})
-  
+
   const getCurrentLocation = () => {
     setLoading(true)
     Geolocation.getCurrentPosition(
@@ -46,6 +46,7 @@ function OpenCamera({loading , setLoading, props , navigation}) {
           lng: info.coords.longitude
         });
         setLoading(false);
+        Alert.alert('','Su ubicación fue actualizada.');
       },
       error => {
         setLoading(false);        
@@ -76,14 +77,14 @@ function OpenCamera({loading , setLoading, props , navigation}) {
 
     const options = { quality: imageQuality , writeExif: exifCoordinate};
     const data = await takePicture(options);
-    
+
     let photo = {
       uri: data.uri,
       type: 'image/jpeg',
     };
 
     if(data.uri){
-      confirmUpload(photo);
+      changeFile(photo);
     }
   }
 
@@ -100,7 +101,7 @@ function OpenCamera({loading , setLoading, props , navigation}) {
     };
     
     if(data.uri){
-      confirmUpload(video);
+      changeFile(video);
     }
   }
 
@@ -125,88 +126,6 @@ function OpenCamera({loading , setLoading, props , navigation}) {
     setFlashState(!flashState);
 
   }
-
-  const uploadFile = async (file) => {
-    let idUsuario = MMKV.getNumber('idUsuario');
-    if(!idUsuario){
-      return false;
-    }
-
-    await checkFileNumber();
-    let numberName = MMKV.getNumber('fileNumber');
-    
-    if(numberName){
-      let newNumberName = numberName + 1;
-      MMKV.set('fileNumber' , newNumberName);
-    }else{
-      MMKV.set('fileNumber' , 1);
-    }
-
-    let name = MMKV.getNumber('fileNumber');
-
-    file = {...file , name : file.type == 'image/jpeg' ? name + '.jpg' : name + '.mp4'};
-
-    const formData = new FormData();
-    formData.append('archivo', file , file.name);
-
-    let date = new Date().getDate();
-    let month = new Date().getMonth() + 1;
-    let year = new Date().getFullYear();
-    let currentDate = date + '-' + month + '-' + year;
-  
-    let response = await service.uploadFile(formData , idUsuario , currentDate , file.name); 
-    
-    return {file , status: response && response.status === 'ok'};
-  }
-
-  const confirmUpload = (file) => {
-    Alert.alert(
-      "",
-      '¿Desea subir el archivo?',
-      [
-        {
-          text: "No",
-          style: "cancel"
-        },
-        { text: "Si", onPress: async () => {
-            setLoading(true);
-            let response = await uploadFile(file);
-            uploadMessage(response.status , response.file.name);
-          }
-        }
-      ],
-      { cancelable: false }
-    );
-  }
-
-  const uploadMessage = (uploaded , fileName) => {
-    setLoading(false);
-    let message = "";
-    uploaded ? message = "El archivo se subio correctamente." : message = "Ocurrio un error al subir este archivo.";
-    Alert.alert(
-      "Archivo: " + fileName,
-      message,
-      [
-        {
-          text: "OK",
-          style: "cancel"
-        }
-      ],
-      { cancelable: true }
-    );
-  }
-
-  const checkFileNumber = async () =>{
-    let date = MMKV.getNumber('date');
-    let today = new Date().getDay();
-    
-    if(date && date !== today){
-        MMKV.set('date' , today);
-        MMKV.set('fileNumber', 0);
-    }else{
-        MMKV.set('date' , today);
-    }
-  };
 
   const setRatio = (value) =>{
     setRatioSelected(value);

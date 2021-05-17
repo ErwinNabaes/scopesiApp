@@ -13,18 +13,23 @@ import { MMKV } from 'react-native-mmkv';
 import 'react-native-gesture-handler';
 import Login from './src/components/login';
 import Home from './src/components/home';
-import OpenCamera from './src/components/camera';
+import CameraView from './src/components/cameraView';
 import Gallery from './src/components/gallery';
 import Form from './src/components/form';
 import Relevamientos from './src/components/relevamientos';
 import RelevamientoView from './src/components/relevamientoView';
 import EntryView from './src/components/entryView';
+import FilePicker from './src/components/filePicker';
+import CameraPreview from './src/components/cameraPreview';
 
 const Stack = createStackNavigator();
 
 function App (){
   const [token, setToken] = useState(MMKV.getString('token') ? MMKV.getString('token') : '');
   const [loading, setLoading] = useState(false);
+  const changeFile = (file) =>{
+    console.log(file);
+}
 
   return (
     <NavigationContainer>
@@ -37,25 +42,42 @@ function App (){
         >
           {props => <Home {...props} setToken={setToken} loading={loading} setLoading={setLoading}></Home>}
         </Stack.Screen>
+
         <Stack.Screen 
           name="Camera"
           options={{headerShown: false}}
         >
-          {props => <OpenCamera {...props} loading={loading} setLoading={setLoading}></OpenCamera>}
+          {props => <CameraView {...props} loading={loading} setLoading={setLoading}></CameraView>}
         </Stack.Screen>
+
+        <Stack.Screen 
+          name="CameraPreview"
+          options={{headerShown: false}}
+        >
+          {props => <CameraPreview {...props} loading={loading} setLoading={setLoading}></CameraPreview>}
+        </Stack.Screen>
+
+        <Stack.Screen
+          name="FilePicker"
+        >
+           {props => <FilePicker {...props} loading={loading} setLoading={setLoading}></FilePicker>}
+        </Stack.Screen> 
         <Stack.Screen 
           name="Galería"
           component={Gallery}
         />
+
         <Stack.Screen 
           name="Relevamientos"
           component={Relevamientos}
           options={{ title: 'Seleccion de relevamientos' }}
         />
+
         <Stack.Screen 
           name="Encuesta"
           component={Form}
         />
+
         <Stack.Screen 
           name={"Relevamiento"}
           component={RelevamientoView}
