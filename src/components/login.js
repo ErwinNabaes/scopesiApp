@@ -3,7 +3,6 @@ import * as service from '../utils/serviceManager';
 import { MMKV } from 'react-native-mmkv';
 import Icon from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import {
-  StatusBar,
   View,
   Text,
   TextInput,
@@ -84,13 +83,6 @@ function Login ({ setToken , loading , setLoading}){
         </View>
           {!authenticated && error && <Text style={{color:'#f0f0f0' , paddingTop:5}}>Usuario y/o contraseña incorrectos</Text>}
         <Loader loading={loading}></Loader>
-        <StatusBar
-          animated={true}
-          backgroundColor="#343a40"
-          barStyle={'default'}
-          showHideTransition={'none'}
-          hidden={false}
-        />
       </View>
   );
 };

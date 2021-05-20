@@ -35,7 +35,14 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
   const [videoQuality , setVideoQualityValue] = useState(MMKV.getString('videoQuality') ? MMKV.getString('videoQuality') : '480p');
   const [modalConfigState , setModalConfigState] = useState(false);
   const [isLandscape , setIsLandscape] = useState(Dimensions.get('window').width > Dimensions.get('window').height);
-  const [geoCoordinates , setGeoCoordinates] = useState({lat: null , lng: null})
+  const [geoCoordinates , setGeoCoordinates] = useState({lat: null , lng: null , altitude: null});
+
+  const changeCoordinates = (info) => {
+    setGeoCoordinates({
+      lat: info.coords.latitude,
+          lng: info.coords.longitude
+        });
+  };
 
   const getCurrentLocation = () => {
     setLoading(true)
@@ -64,15 +71,23 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
             Alert.alert(error.message);
         }
       },
-      { enableHighAccuracy:true , timeout:20000 , maximumAge:1000 }
+      { enableHighAccuracy:false , timeout:20000 , maximumAge:1000 }
     );
-  }
+  };
+
+  const subscribeToLocation = () => {
+    Geolocation.watchPosition(
+      changeCoordinates,
+      error => {},
+      { enableHighAccuracy: false, maximumAge: 1000, distanceFilter:20 }
+    );
+  };
 
   const takePhoto = async () => {
     let exifCoordinate = {};
 
     if(geoCoordinates.lat && geoCoordinates.lng){
-      exifCoordinate = { GPSLatitude: geoCoordinates.lat, GPSLongitude: geoCoordinates.lng };
+      exifCoordinate = { GPSLatitude: geoCoordinates.lat, GPSLongitude: geoCoordinates.lng , GPSAltitude: geoCoordinates.altitude,};
     }
 
     const options = { quality: imageQuality , writeExif: exifCoordinate};
@@ -171,6 +186,24 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
   }, [isRecording]);
 
   useEffect(() => {
+    Geolocation.getCurrentPosition(
+      changeCoordinates,
+      error => {
+        if(error.code == 2){
+          Alert.alert('Posición no disponible','Por favor, active la ubicación de su dispositivo.');
+        }
+      },
+      { enableHighAccuracy: false , maximumAge: 1000 }
+    );
+    
+    subscribeToLocation();
+
+    return () => { 
+      Geolocation.clearWatch(0);
+    }
+  }, []);
+
+  useEffect(() => {
     Dimensions.addEventListener('change', checkDimension);
 
     return () => { 
@@ -180,18 +213,18 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
 
   return (
     <View style={isLandscape ?  landscapeStyles.cameraContainer : styles.cameraContainer}>
-      <View style={[{backgroundColor:'#000' , display: ratioSelected === '16:9' ? 'none' : 'flex'} , isLandscape ? {height:'100%', width: ratioSelected === '4:3' ? '7%' : '20%'}: {height: ratioSelected === '4:3' ? '7%' : '20%'}]}></View>
+      <View style={[{backgroundColor:'#000' , display: ratioSelected === '16:9' ? 'none' : 'flex'} , isLandscape ? {height:'100%', width: ratioSelected === '4:3' ? '7%' : '20%'} : {height: ratioSelected === '4:3' ? '7%' : '20%'}]}></View>
       <View style={isLandscape ? landscapeStyles.topPanel : styles.topPanel}>
         <TouchableOpacity
           onPress={() => setModalConfigState(true)}
           disabled={isRecording}
-          style={{marginLeft:5}}
+          style={{margin:3}}
         >
           <Octicons name={"gear"} style={[styles.fontColor, {opacity: isRecording ? 0.3 : 1}]} size={25}/>
         </TouchableOpacity>
-        <Text style={[styles.recordDuration , {display: mode === 'video' ? 'flex' : 'none'}]}>{duration}</Text>
+        <Text style={mode === 'video' ? styles.recordDuration : styles.displayNone}>{duration}</Text>
         <TouchableOpacity     
-          onPress={()=>closeCamera()}
+          onPress={() => closeCamera()}
           disabled={isRecording}
         >
           <Icon name={"close"} style={[styles.fontColor, {opacity: isRecording ? 0.3 : 1}]} size={30}/>
@@ -346,7 +379,7 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
         animated={true}
         backgroundColor="#343a40"
         barStyle={'default'}
-        showHideTransition={'none'}
+        showHideTransition={'slide'}
         hidden={true}
       />
     </View>

@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import {
-  StatusBar
-} from 'react-native';
 import OpenCamera from './camera';
 import CameraPreview from './cameraPreview';
 

@@ -43,6 +43,9 @@ module.exports = StyleSheet.create({
       justifyContent:'center',
       alignSelf:'center'
     },
+    displayNone: {
+      display:'none'
+    },
 
   /*-----------Login styles-----------*/
     input: {
@@ -149,7 +152,7 @@ module.exports = StyleSheet.create({
       textAlign:'center',
       paddingHorizontal:5,
       paddingTop:5,
-    },   
+    },  
     folderButton: {
       width:40,
       height:40,

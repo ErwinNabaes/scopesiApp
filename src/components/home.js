@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import {
   View,
+  StatusBar,
   Text,
   TouchableOpacity,
-  StatusBar
+  PermissionsAndroid,
+  Platform
 } from 'react-native';
 import Loader from './loader';
 import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons';
@@ -19,8 +21,12 @@ function Home ({ setToken , loading , setLoading, navigation }){
         setToken('');
         setLoading(false);
     };
-    const openCamera = () => {
-        navigation.navigate('Camera');
+    const openCamera = async () => {
+        if (Platform.OS === "android" && !(await hasAndroidPermission())) {
+            return;
+        }else{
+            navigation.navigate('Camera');
+        }
     };
     const openFilePicker = () => {
       navigation.navigate('FilePicker');
@@ -28,6 +34,25 @@ function Home ({ setToken , loading , setLoading, navigation }){
     const openFormsList = () => {
         navigation.navigate('Relevamientos');
     };
+
+    const hasAndroidPermission = async () => {
+        const cameraPermission = PermissionsAndroid.PERMISSIONS.CAMERA;
+        const audioPermission = PermissionsAndroid.PERMISSIONS.RECORD_AUDIO;
+        const locationPermission = PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION;
+
+        const hasPermission = await PermissionsAndroid.check(cameraPermission) 
+                        && await PermissionsAndroid.check(audioPermission)
+                        && await PermissionsAndroid.check(locationPermission);
+        if (hasPermission) {
+            return true;
+        }
+
+        const status = await PermissionsAndroid.request(cameraPermission) === 'granted'
+                    && await PermissionsAndroid.request(audioPermission) === 'granted'
+                    && await PermissionsAndroid.request(locationPermission) === 'granted';
+
+        return status;
+    }
 
     useEffect(() => {
         navigation.setOptions({
@@ -44,6 +69,13 @@ function Home ({ setToken , loading , setLoading, navigation }){
 
     return(
         <View style={styles.container}>
+            <StatusBar
+                animated={true}
+                backgroundColor="#343a40"
+                barStyle={'default'}
+                showHideTransition={'slide'}
+                hidden={false}
+            />
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.button}
@@ -72,13 +104,6 @@ function Home ({ setToken , loading , setLoading, navigation }){
                 </TouchableOpacity>
             </View> */}
             <Loader loading={loading}></Loader>
-            <StatusBar
-                animated={true}
-                backgroundColor="#343a40"
-                barStyle={'default'}
-                showHideTransition={'none'}
-                hidden={false}
-            />
         </View>
     );
 };

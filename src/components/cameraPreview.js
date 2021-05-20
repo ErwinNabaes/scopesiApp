@@ -10,6 +10,7 @@ import CameraRoll from "@react-native-community/cameraroll";
 
 import {
   View,
+  StatusBar,
   TouchableOpacity,
   Image,
   Alert,
@@ -80,7 +81,8 @@ function CameraPreview ({loading , setLoading, file , changeFile , fromGallery})
             if (Platform.OS === "android" && !(await hasAndroidPermission())) {
                 return;
             }
-            CameraRoll.save(file.uri, {album: 'Auditapp/' + `auditoria-${newFile.name}`});
+            // CameraRoll.save(file.uri, {album: 'Auditapp/' + `auditoria-${newFile.name}`});
+            CameraRoll.save(file.uri, {album: 'Auditapp/Auditapp-on'});
         }
 
         const formData = new FormData();
@@ -117,9 +119,9 @@ function CameraPreview ({loading , setLoading, file , changeFile , fromGallery})
         //     response = {file , status: true , folderName:`auditoria-${newFile.name}`};
 
         // })
-        await CameraRoll.save(file.uri, { album: 'Auditapp'})
+        await CameraRoll.save(file.uri, { album: 'Auditapp/Auditapp-off'})
         .then(async r => {
-            response = {file , status: true , folderName:'Auditapp'};
+            response = {file , status: true , folderName:'Auditapp-off'};
 
         })
         .catch((err) => {
@@ -146,7 +148,7 @@ function CameraPreview ({loading , setLoading, file , changeFile , fromGallery})
           ],
           { cancelable: true }
         );
-      }
+    };
 
     const confirmUpload = (file) => {
         fromGallery
@@ -210,6 +212,13 @@ function CameraPreview ({loading , setLoading, file , changeFile , fromGallery})
 
     return(
         <View style={{ flex: 1, flexDirection: 'column', backgroundColor:'#000'}}>
+            <StatusBar
+                animated={true}
+                backgroundColor="#343a40"
+                barStyle={'default'}
+                showHideTransition={'slide'}
+                hidden={true}
+            />
             {
                 file.type === 'video/mp4'  
                 ?

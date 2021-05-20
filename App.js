@@ -21,6 +21,7 @@ import RelevamientoView from './src/components/relevamientoView';
 import EntryView from './src/components/entryView';
 import FilePicker from './src/components/filePicker';
 import CameraPreview from './src/components/cameraPreview';
+import { StatusBar } from 'react-native';
 
 const Stack = createStackNavigator();
 
@@ -101,6 +102,13 @@ function App (){
         </>
       )}
       </Stack.Navigator>
+      <StatusBar
+        animated={true}
+        backgroundColor="#343a40"
+        barStyle={'default'}
+        showHideTransition={'none'}
+        hidden={false}
+      />
     </NavigationContainer>
   );
 };
