@@ -9,7 +9,7 @@
   dependencies:
     "@babel/highlight" "^7.12.13"
 
-"@babel/core@^7.0.0", "@babel/core@^7.1.0", "@babel/core@^7.12.13", "@babel/core@^7.7.5":
+"@babel/core@*", "@babel/core@^7.0.0", "@babel/core@^7.0.0-0", "@babel/core@^7.1.0", "@babel/core@^7.12.13", "@babel/core@^7.7.5":
   "integrity" "sha512-BQKE9kXkPlXHPeqissfxo0lySWJcYdEP0hdtJOH/iJfDdhOCcgtNCjftCJg3qqauB4h+lz2N6ixM++b9DN1Tcw=="
   "resolved" "https://registry.npmjs.org/@babel/core/-/core-7.12.13.tgz"
   "version" "7.12.13"
@@ -5677,7 +5677,7 @@
     "kleur" "^3.0.3"
     "sisteransi" "^1.0.5"
 
-"prop-types@^15.6.2", "prop-types@^15.7.2":
+"prop-types@^15.0 || ^16.0", "prop-types@^15.6.2", "prop-types@^15.7.2":
   "integrity" "sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ=="
   "resolved" "https://registry.npmjs.org/prop-types/-/prop-types-15.7.2.tgz"
   "version" "15.7.2"
@@ -5752,7 +5752,7 @@
   "resolved" "https://registry.npmjs.org/react-native-camera-hooks/-/react-native-camera-hooks-0.4.0.tgz"
   "version" "0.4.0"
 
-"react-native-camera@git+https://git@github.com/react-native-community/react-native-camera.git":
+"react-native-camera@>= 2.6.0", "react-native-camera@git+https://git@github.com/react-native-community/react-native-camera.git":
   "resolved" "git+https://git@github.com/react-native-community/react-native-camera.git#6a81dea6574389add42e4d3f005dabda89115b8c"
   "version" "3.42.2"
   dependencies:
@@ -5836,7 +5836,7 @@
     "escape-string-regexp" "2.0.0"
     "invariant" "2.2.4"
 
-"react-native@^0.63.4":
+"react-native@*", "react-native@^0.63.4", "react-native@>= 0.51", "react-native@>=0.60", "react-native@>=0.60 <=0.64", "react-native@>=0.62.0-rc.0 <0.64.0":
   "integrity" "sha512-I4kM8kYO2mWEYUFITMcpRulcy4/jd+j9T6PbIzR0FuMcz/xwd+JwHoLPa1HmCesvR1RDOw9o4D+OFLwuXXfmGw=="
   "resolved" "https://registry.npmjs.org/react-native/-/react-native-0.63.4.tgz"
   "version" "0.63.4"
@@ -5884,7 +5884,7 @@
     "react-is" "^16.8.6"
     "scheduler" "^0.19.1"
 
-"react@16.13.1":
+"react@*", "react@^16.8.0 || ^17.0.0", "react@>= 16.0 || < 17.0", "react@16 || 17", "react@16.13.1":
   "integrity" "sha512-YMZQQq32xHLX0bz5Mnibv1/LHb3Sqzngu7xstSM+vrkE5Kzr9xE0yMByK5kMoTK30YVJE61WfbxIFFvfeDKT1w=="
   "resolved" "https://registry.npmjs.org/react/-/react-16.13.1.tgz"
   "version" "16.13.1"

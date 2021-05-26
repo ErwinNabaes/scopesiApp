@@ -17,7 +17,9 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  Dimensions
+  Dimensions,
+  NativeModules,
+  DeviceEventEmitter
 } from 'react-native';
 
 function OpenCamera({loading , setLoading, changeFile , props , navigation}) {   
@@ -71,7 +73,7 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
             Alert.alert(error.message);
         }
       },
-      { enableHighAccuracy:false , timeout:20000 , maximumAge:1000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
     );
   };
 
@@ -79,7 +81,7 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
     Geolocation.watchPosition(
       changeCoordinates,
       error => {},
-      { enableHighAccuracy: false, maximumAge: 1000, distanceFilter:20 }
+      { enableHighAccuracy: true, maximumAge: 1000, distanceFilter: 20 }
     );
   };
 
@@ -93,13 +95,15 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
     const options = { quality: imageQuality , writeExif: exifCoordinate};
     const data = await takePicture(options);
 
-    let photo = {
-      uri: data.uri,
-      type: 'image/jpeg',
-    };
-
     if(data.uri){
+      let photo = {
+        uri: data.uri,
+        type: 'image/jpeg',
+      };
+
       changeFile(photo);
+    }else{
+      Alert.alert('Error' , 'Lo sentimos, ocurrio un error en el procesar la foto.');
     }
   }
 
@@ -109,14 +113,16 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
     const options = { quality: videoQuality , maxDuration:60};
     const data = await recordVideo(options);
     setIsRecording(false);   
-
-    let video = {
-      uri: data.uri,
-      type: 'video/mp4',
-    };
     
-    if(data.uri){
+    if (data.uri) {
+      let video = {
+        uri: data.uri,
+        type: 'video/mp4',
+      };
+
       changeFile(video);
+    } else {
+      Alert.alert('Error' , 'Lo sentimos, ocurrio un error al procesar el video.');
     }
   }
 
@@ -182,7 +188,9 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
       setDuration("00:00");
     }
 
-    return () => clearInterval(secTimer);
+    return () => {
+      clearInterval(secTimer);
+    }
   }, [isRecording]);
 
   useEffect(() => {
@@ -193,7 +201,7 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
           Alert.alert('Posición no disponible','Por favor, active la ubicación de su dispositivo.');
         }
       },
-      { enableHighAccuracy: false , maximumAge: 1000 }
+      { enableHighAccuracy: true, maximumAge: 1000 }
     );
     
     subscribeToLocation();
@@ -210,6 +218,42 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
       Dimensions.removeEventListener('change'); 
     }
   }, []);
+
+  useEffect(() => {
+
+    NativeModules.KeyEventLister.audioSwitch(true); // intercept phone volume key events
+    DeviceEventEmitter.removeAllListeners('keyup'); // Remove Event Listeners
+
+    // write your own key events
+    DeviceEventEmitter.addListener('keyup', (e) => {
+      if(e.keyCode === 24) {
+        // volume increase button 
+        if (mode === 'camera') {
+          takePhoto();
+        } else if (isRecording) {
+          stopRecord();
+        } else {
+          record();
+        }
+      }
+      if(e.keyCode === 25){
+        // volume down key
+        if (mode === 'camera') {
+          takePhoto();
+        } else if (isRecording) {
+          stopRecord();
+        } else {
+          record();
+        }
+      }	
+   	});
+
+    return () => {
+      // restore the original function of the phone volume buttons
+      NativeModules.KeyEventLister.audioSwitch(false); // unblock the phone volume key events
+      DeviceEventEmitter.removeAllListeners('keyup'); // Remove Event Listeners
+    }
+  }, [mode , isRecording])
 
   return (
     <View style={isLandscape ?  landscapeStyles.cameraContainer : styles.cameraContainer}>
@@ -257,12 +301,12 @@ function OpenCamera({loading , setLoading, changeFile , props , navigation}) {
         >
           <Icon name={flashState ? 'flash' : 'flash-off'} style={styles.fontColor} size={25}/>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={getCurrentLocation}
           style={[{ borderColor: geoCoordinates.lat && geoCoordinates.lng ? '#3CD0AD' : '#C00' } , isLandscape ? landscapeStyles.locationButton : styles.locationButton]}
         >
           <Icon name={'location-sharp'} style={styles.fontColor} size={25}/>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* <TouchableOpacity
           onPress={()=>openGallery()}
           style={[styles.squaredButton , styles.folderButton]}
